@@ -1,4 +1,10 @@
-# Energy Market Arbitrage Analytics
+# ⚡ Energy Market Arbitrage Analytics
+
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-Gradient%20Boosting-brightgreen)](https://lightgbm.readthedocs.io/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Pipeline-orange?logo=scikit-learn)](https://scikit-learn.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics/actions/workflows/python-tests.yml/badge.svg)](https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics/actions)
 
 **Predicting short-term I-SEM electricity price spreads and evaluating confidence-filtered trading strategy performance.**
 
@@ -6,11 +12,28 @@ This repository is a professional, public-safe reproduction structure for an MSc
 
 ---
 
-## Executive summary
+## 📋 Table of Contents
+
+- [Executive Summary](#executive-summary)
+- [Market Structure](#market-structure)
+- [Repository Design](#repository-design)
+- [Methodology](#methodology)
+- [Model Performance](#model-performance)
+- [Trading Strategy Results](#trading-strategy-results)
+- [Pre-generated Results](#pre-generated-results)
+- [Setup & Installation](#setup--installation)
+- [Reproducing Locally](#reproducing-locally-with-the-private-dataset)
+- [Limitations](#limitations)
+- [Portfolio Value](#portfolio-value)
+- [References](#references)
+
+---
+
+## Executive Summary
 
 The project investigates whether demand, wind, solar generation, interconnector flows and system variables can explain and predict short-term price spreads between sequential I-SEM markets.
 
-| Headline result | Finding |
+| Headline Result | Finding |
 |---|---|
 | Best predictive transition | **DAM → IDA1** |
 | DAM → IDA1 test accuracy | **70.18%** |
@@ -21,38 +44,54 @@ The project investigates whether demand, wind, solar generation, interconnector 
 | DAM → BM executed trades | **4,258** |
 | DAM → BM hit rate | **70.36%** |
 
-The main strategic interpretation is that **DAM → IDA1 is the more predictable/stable modelling target**, while **DAM → BM offers the highest gross profitability but with higher risk and stronger need for drawdown monitoring**.
+The main strategic interpretation is that **DAM → IDA1 is the more predictable and stable modelling target**, while **DAM → BM offers the highest gross profitability but with higher risk and a stronger need for drawdown monitoring**.
+
+### Strategic Recommendation
+
+| Objective | Recommended Transition | Rationale |
+|---|---|---|
+| Maximise **predictability** | DAM → IDA1 | 70.18% accuracy, 80.93% hit rate, highest trade volume |
+| Maximise **profitability** | DAM → BM | €33.75/MWh gross, subject to drawdown monitoring |
+| **Balanced** approach | DAM → IDA1 (primary) + DAM → BM (supplementary, reduced volume) | Best risk-adjusted outcome |
 
 ---
 
-## Repository design
+## Market Structure
+
+The I-SEM is the wholesale electricity market for Ireland and Northern Ireland, operated by SEMO. It comprises a cascade of sequential auction markets — each gate closure is an opportunity to refine positions as real-time delivery approaches and new information arrives:
+
+```
+DAM  ──►  IDA1  ──►  IDA2  ──►  IDA3  ──►  BM
+```
+
+Arbitrage means **buying in one market and offsetting in a later market**, profiting from the price spread between them. Profitability depends entirely on predicting the **direction and magnitude** of those spreads before they are realised.
+
+---
+
+## Repository Design
 
 ```text
 energy-market-arbitrage-analytics/
-├── config/                    # Reproduction settings and model constants
+├── config/                      # Reproduction settings and model constants
 ├── data/
-│   ├── sample/                # Public synthetic sample only
-│   └── README.md              # Data access and confidentiality notes
-├── docs/                      # Methodology, results, data dictionary, model card
+│   ├── sample/                  # Public synthetic sample only
+│   └── README.md                # Data access and confidentiality notes
+├── docs/                        # Methodology, results, data dictionary, model card
 ├── notebooks/
-│   └── original/              # Original submitted notebook retained as source of truth
-├── outputs/                   # Pre-generated result tables from the submitted analysis
+│   └── original/                # Original submitted notebook — source of truth
+├── outputs/                     # Pre-generated result tables from the submitted analysis
 ├── reports/
-│   ├── figures/               # Pre-generated result visualisations
+│   ├── figures/                 # Pre-generated result visualisations
 │   └── executive_case_study.md
-├── scripts/                   # CLI scripts for sample data and private reproduction runs
-├── src/energy_arbitrage/      # Modular reproduction package
-├── tests/                     # Fidelity and hygiene checks
+├── scripts/                     # CLI scripts for sample data and private reproduction
+├── src/energy_arbitrage/        # Modular reproduction package
+├── tests/                       # Fidelity and hygiene checks
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
 ```
 
----
-
-## Why this repo is structured this way
-
-The original analysis was completed in a notebook. For a professional GitHub portfolio, the same logic is separated into maintainable Python modules:
+The original analysis was completed in a notebook. For a professional portfolio, the same logic is separated into maintainable Python modules:
 
 | Module | Purpose |
 |---|---|
@@ -63,50 +102,43 @@ The original analysis was completed in a notebook. For a professional GitHub por
 | `visualization.py` | Report-ready figures |
 | `pipeline.py` | End-to-end orchestration |
 
-`original_logic.py` is kept only as a compatibility re-export layer. The code is no longer a 700+ line monolith.
+`original_logic.py` is retained only as a compatibility re-export layer — the code is no longer a monolith.
 
 ---
 
 ## Methodology
 
-### 1. Data cleaning
+### 1. Data Cleaning
 
-The original dataset contained **72,945 rows × 105 columns**. After duplicate removal, timestamp consolidation and essential-variable filtering, the analytical dataset contained **70,006 observations**. IDA2 and IDA3 missingness was handled as market-structural rather than random, because those auctions only operate during specific delivery windows.
+The original dataset contained **72,945 rows × 105 columns**. After removing 2,721 fully duplicate rows, resolving 144 duplicate timestamps via NaN-safe mean, and dropping rows missing essential market variables, the analytical dataset contained **70,006 observations**. IDA2 and IDA3 missingness was treated as market-structural (not random), because those auctions only operate during specific delivery windows.
 
-### 2. Target construction
+### 2. Target Construction
 
-Seven spreads were evaluated:
+Seven spreads were evaluated, one per market transition:
 
-```text
-DAM → IDA1
-IDA1 → IDA2
-IDA2 → IDA3
-IDA1 → BM
-IDA2 → BM
-IDA3 → BM
-DAM → BM
+```
+DAM → IDA1    IDA1 → IDA2    IDA2 → IDA3
+IDA1 → BM     IDA2 → BM      IDA3 → BM     DAM → BM
 ```
 
-Each transition has:
+Each transition has a classification target (`sign(spread)`) and a regression target (spread magnitude in €/MWh).
 
-- a classification target: `sign(spread)`
-- a regression target: spread magnitude in €/MWh
+### 3. Feature Engineering
 
-### 3. Feature engineering
+All features are constructed strictly from information available at each market's gate closure — no future data leaks into any model input.
 
-Features include:
-
-- cyclical hour/day/month encodings
-- net demand = demand − wind − solar
-- wind forecast consensus and uncertainty
-- demand and wind forecast revisions
-- renewable penetration features
-- 1-day, 2-day, 7-day and 14-day lag/rolling features
-- transition-specific market-window logic to avoid future information leakage
+| Feature Category | Description |
+|---|---|
+| Cyclical calendar | Sine/cosine encoding of hour-of-day, day-of-week, month-of-year |
+| Net demand | System demand minus wind and solar forecasts per auction horizon |
+| Wind consensus & uncertainty | Mean and std dev across Meteo, EmSys, EirGrid forecast providers |
+| Forecast revision | Change in wind/demand estimates between successive auction horizons |
+| Lag variables | 1-day, 2-day, 7-day, 14-day lags of spreads and prices |
+| Renewable penetration | Wind + solar as fraction of total demand per horizon |
 
 ### 4. Modelling
 
-LightGBM is the primary model family, matching the submitted analysis.
+LightGBM is the primary model family, matching the submitted analysis exactly:
 
 ```python
 LGBMClassifier(
@@ -124,31 +156,63 @@ LGBMClassifier(
 )
 ```
 
-The regressor uses the same LightGBM parameter family.
-
 ### 5. Validation
 
-- Strict chronological split: first 80% train, final 20% test
-- No random shuffling
-- 5-fold walk-forward cross-validation
-- 14-day lag burn-in before modelling
+- Strict chronological split: first 80% train, final 20% test — no shuffling
+- 5-fold walk-forward cross-validation (`TimeSeriesSplit`)
+- 14-day lag burn-in before modelling begins
+- Transition-specific feature windows to prevent future-market leakage
 
-### 6. Trading strategy
+### 6. Trading Strategy
 
-The classifier predicts spread direction. The model trades only when confidence exceeds the threshold:
+The classifier predicts spread direction. Trades are only placed when the model exceeds a confidence threshold:
 
-```text
+```
 confidence = abs(p_up - 0.5)
-trade if confidence > 0.20
+trade only if confidence > 0.20
 ```
 
-Position size is scaled to the regression model's predicted spread magnitude. Results are gross of transaction costs.
+Position size is scaled proportionally to the regression model's predicted spread magnitude. Results are gross of transaction costs.
 
 ---
 
-## Pre-generated results
+## Model Performance
 
-The repo includes report-level outputs so GitHub visitors can inspect the findings immediately:
+| Transition | Test Accuracy | ROC-AUC | CV Accuracy (±Std) |
+|---|---|---|---|
+| **DAM → IDA1** | **70.18%** | **0.7718** | **69.76% (±2.00%)** |
+| DAM → BM | 58.54% | 0.6161 | 56.99% (±2.20%) |
+| IDA1 → IDA2 | 57.18% | 0.6178 | 56.72% (±1.98%) |
+| IDA1 → BM | 56.24% | 0.5779 | 55.17% (±1.92%) |
+| IDA2 → BM | 56.12% | 0.5653 | 55.08% (±1.89%) |
+| IDA2 → IDA3 | 55.74% | 0.5862 | 55.12% (±2.01%) |
+| IDA3 → BM | 55.60% | 0.5582 | 55.17% (±2.05%) |
+
+The gap between DAM→IDA1 and all BM-related transitions is stark. The BM reflects real-time system imbalances driven by events that are fundamentally harder to anticipate from earlier-horizon data.
+
+---
+
+## Trading Strategy Results
+
+Results at optimal confidence threshold **0.20** (model probability outside [0.30, 0.70]):
+
+| Transition | Test Size | Trades | % Traded | Hit Rate | €/MWh | Total P&L (€) |
+|---|---|---|---|---|---|---|
+| **DAM → BM** | 13,783 | 4,258 | 30.9% | 70.36% | **€33.75** | **€480,887** |
+| IDA1 → BM | 13,829 | 4,064 | 29.4% | 65.28% | €17.67 | €271,178 |
+| IDA2 → BM | 6,928 | 1,850 | 26.7% | 63.84% | €17.36 | €95,732 |
+| **DAM → IDA1** | 13,653 | **7,350** | **53.8%** | **80.93%** | €14.11 | €375,056 |
+| IDA3 → BM | 3,467 | 907 | 26.2% | 59.21% | €9.64 | €33,689 |
+| IDA1 → IDA2 | 6,857 | 2,776 | 40.5% | 58.43% | €7.18 | €83,058 |
+| IDA2 → IDA3 | 3,417 | 952 | 27.9% | 59.98% | €7.96 | €26,469 |
+
+All figures are gross of transaction costs and market impact. Max drawdown for DAM→BM over the test period: **~€15,852**.
+
+---
+
+## Pre-generated Results
+
+The repo includes report-level outputs so GitHub visitors can inspect findings immediately without running any code:
 
 | File | Description |
 |---|---|
@@ -157,11 +221,30 @@ The repo includes report-level outputs so GitHub visitors can inspect the findin
 | `outputs/original_market_price_summary.csv` | Cleaned market price summary statistics |
 | `reports/figures/original_model_accuracy.png` | Bar chart of test accuracy by transition |
 | `reports/figures/original_total_pnl.png` | Bar chart of total gross P&L |
-| `reports/figures/original_accuracy_vs_profitability.png` | Accuracy/profitability comparison |
+| `reports/figures/original_accuracy_vs_profitability.png` | Accuracy vs profitability scatter |
 
 ---
 
-## Reproducing locally with the private dataset
+## Setup & Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics.git
+cd energy-market-arbitrage-analytics
+
+# Create a virtual environment
+python -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+.venv\Scripts\activate           # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -e .
+```
+
+---
+
+## Reproducing Locally with the Private Dataset
 
 The raw Energia dataset is proprietary and intentionally excluded. To reproduce the full results locally, place the file here:
 
@@ -172,49 +255,53 @@ data/private/MarketData_2022-2026.parquet
 Then run:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
 python scripts/01_run_reproduction_pipeline.py \
   --data data/private/MarketData_2022-2026.parquet \
   --outputs outputs \
   --figures reports/figures
 ```
 
-Or use:
+Or simply:
 
 ```bash
 make test
 ```
 
----
-
-## Public sample data
-
-A synthetic sample is included under `data/sample/` for repository structure and unit tests. It is **not** the Energia dataset and should not be used to validate the reported business results.
+A synthetic sample is included under `data/sample/` for unit tests only. It is **not** the Energia dataset and must not be used to validate the reported results.
 
 ---
 
 ## Limitations
 
-- Reported P&L is gross of transaction costs and slippage.
-- Market impact and liquidity constraints are not modelled.
-- BM-related transitions are more volatile and harder to forecast.
-- Live deployment would require rolling retraining, costs, risk limits and real-time monitoring.
-- Public reproduction of the exact numbers requires the private dataset, which is not committed.
+- Reported P&L is gross of transaction costs and slippage
+- Market impact and liquidity constraints are not modelled
+- BM-related transitions are more volatile and harder to forecast
+- Live deployment would require rolling retraining, cost modelling, risk limits and real-time monitoring
+- Public reproduction of the exact numbers requires the private Energia dataset
 
 ---
 
-## Portfolio value
+## Portfolio Value
 
 This project demonstrates:
 
-- energy-market domain understanding
-- time-series leakage control
-- feature engineering from system fundamentals
-- LightGBM classification/regression modelling
-- walk-forward validation
-- strategy design and backtesting
-- P&L/risk interpretation
-- professional code packaging and documentation
+- Energy-market domain understanding (I-SEM structure, auction sequencing, arbitrage mechanics)
+- Time-series leakage control (strict temporal splits, walk-forward CV, gate-closure information barriers)
+- Feature engineering from system fundamentals (net demand, wind consensus, forecast revisions, cyclical encoding)
+- LightGBM classification and regression modelling
+- Confidence-filtered, magnitude-proportional trading strategy design
+- P&L and drawdown analysis
+- Professional Python packaging, CI, and documentation
+
+---
+
+## Author
+
+**Snehankur Sarkar**  
+MSc Data Analytics · Queen's University Belfast · DSA8023  
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). The underlying market data is proprietary to Energia and is excluded from this licence.
