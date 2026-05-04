@@ -294,6 +294,14 @@ This project demonstrates:
 
 ---
 
+## Acknowledgements
+
+This project was completed as part of the DSA8023 Analytathon at Queen’s University Belfast using Energia-provided I-SEM market data. I would like to acknowledge my group members : Cathal Curran, Febin Jaison Thuruthiyil and Ujjwala Amalanathan, for their collaboration, discussions, and shared contributions during the project development process. Their input helped shape the analytical direction, interpretation of results, and overall project workflow.
+
+Any public-safe restructuring, modularisation, documentation, and GitHub portfolio presentation in this repository are my own responsibility.
+
+---
+
 ## Author
 
 **Snehankur Sarkar**  
