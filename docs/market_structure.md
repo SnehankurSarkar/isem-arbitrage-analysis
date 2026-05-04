@@ -10,13 +10,13 @@ The **Integrated Single Electricity Market (I-SEM)** is the wholesale electricit
 
 Electricity is traded through a cascade of sequential auction markets. Each gate closure represents a point at which traders can submit or revise bids and offers. As delivery time approaches, information improves (more accurate wind/demand forecasts, actual plant availability) and prices are re-set.
 
-| Market | Abbreviation | Gate Closure | Coverage | Notes |
-|---|---|---|---|---|
-| Day-Ahead Market | DAM | ~12:00 the day before delivery | All 48 half-hour periods of next day | Pan-European coupling via EUPHEMIA |
-| Intraday Auction 1 | IDA1 | ~15:00 the day before delivery | All 48 periods | First opportunity to refine DAM positions |
-| Intraday Auction 2 | IDA2 | ~22:00 the day before delivery | Periods 23–48 (11:00–23:00) | Limited to later half of delivery day |
-| Intraday Auction 3 | IDA3 | ~10:00 on delivery day | Periods 35–48 (17:00–23:00) | Evening delivery only |
-| Balancing Market | BM | Continuous up to ~1hr before delivery | Real-time | Reflects actual system imbalance |
+| Market | Abbreviation | Gate Closure | Coverage |
+|---|---|---|---|
+| Day-Ahead Market | DAM | ~12:00 the day before delivery | All 48 half-hour periods of next day |
+| Intraday Auction 1 | IDA1 | ~15:00 the day before delivery | All 48 periods |
+| Intraday Auction 2 | IDA2 | ~22:00 the day before delivery | Periods 23–48 (11:00–23:00) |
+| Intraday Auction 3 | IDA3 | ~10:00 on delivery day | Periods 35–48 (17:00–23:00) |
+| Balancing Market | BM | Continuous up to ~1hr before delivery | Real-time |
 
 ---
 
@@ -80,5 +80,3 @@ Interconnector flows influence I-SEM prices by allowing arbitrage with the GB ma
 ## References
 
 - SEMO (2025). *I-SEM Market Overview*. https://www.sem-o.com
-- CRU / Utility Regulator (2018). *I-SEM High Level Design*. Commission for Regulation of Utilities.
-- Unwiejewski et al. (2019). Understanding intraday electricity markets. *International Journal of Forecasting*, 35.
