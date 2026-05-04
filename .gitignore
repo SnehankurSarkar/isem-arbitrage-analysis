@@ -1,0 +1,43 @@
+# macOS / local OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# R local state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Private/proprietary data
+MarketData_2022-2026.parquet
+MarketData.csv
+data/private/
+*.parquet
+
+# Generated outputs from private reproduction runs
+outputs/model_performance.csv
+outputs/leaderboard.csv
+outputs/trading_results_all_thresholds.csv
+reports/figures/cumulative_pnl_all_transitions.png
+reports/figures/drawdown_DAM_BM.png
+reports/figures/accuracy_vs_profitability.png
+
+# Secrets/config
+.env
