@@ -1,0 +1,13 @@
+name: energy-market-arbitrage-analytics
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - scikit-learn
+  - lightgbm
+  - matplotlib
+  - pyarrow
+  - jupyter
+  - pytest

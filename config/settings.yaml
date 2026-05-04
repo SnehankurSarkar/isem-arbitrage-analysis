@@ -1,0 +1,61 @@
+project:
+  name: energy-market-arbitrage-analytics
+  description: Faithful public-safe reproduction structure for the I-SEM Analytathon arbitrage project.
+  random_state: 42
+  public_data_policy: proprietary_raw_data_excluded
+
+data:
+  private_data_path_example: data/private/MarketData_2022-2026.parquet
+  public_sample_path: data/sample/isem_synthetic_sample.csv
+  delivery_frequency_minutes: 30
+  cleaned_observations_original: 70006
+  raw_observations_original: 72945
+  duplicate_rows_removed_original: 2721
+  duplicate_timestamps_resolved_original: 144
+
+market_windows:
+  IDA2:
+    start_hod: 11.0
+    end_hod: 23.0
+  IDA3:
+    start_hod: 17.0
+    end_hod: 23.0
+
+modelling:
+  prefer_lightgbm: true
+  primary_classifier: LGBMClassifier
+  primary_regressor: LGBMRegressor
+  fallback_classifier: GradientBoostingClassifier
+  fallback_regressor: GradientBoostingRegressor
+  temporal_test_fraction: 0.20
+  walk_forward_splits: 5
+  lag_burnin_periods: 672
+  lag_burnin_days: 14
+  lightgbm_params:
+    n_estimators: 800
+    learning_rate: 0.03
+    max_depth: 6
+    num_leaves: 63
+    min_child_samples: 30
+    subsample: 0.8
+    colsample_bytree: 0.7
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    random_state: 42
+    n_jobs: -1
+
+strategy:
+  best_confidence_threshold: 0.20
+  confidence_thresholds: [0.0, 0.05, 0.10, 0.15, 0.20]
+  max_volume: 10.0
+  sizing_rule: magnitude_proportional
+  gross_of_transaction_costs: true
+
+transitions:
+  - DAM→IDA1
+  - IDA1→BM
+  - IDA1→IDA2
+  - IDA2→IDA3
+  - DAM→BM
+  - IDA2→BM
+  - IDA3→BM
