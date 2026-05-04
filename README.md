@@ -4,7 +4,6 @@
 [![LightGBM](https://img.shields.io/badge/LightGBM-Gradient%20Boosting-brightgreen)](https://lightgbm.readthedocs.io/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Pipeline-orange?logo=scikit-learn)](https://scikit-learn.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics/actions/workflows/python-tests.yml/badge.svg)](https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics/actions)
 
 **Predicting short-term I-SEM electricity price spreads and evaluating confidence-filtered trading strategy performance.**
 
