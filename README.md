@@ -228,8 +228,8 @@ The repo includes report-level outputs so GitHub visitors can inspect findings i
 
 ```bash
 # Clone the repository
-git clone https://github.com/SnehankurSarkar/energy-market-arbitrage-analytics.git
-cd energy-market-arbitrage-analytics
+git clone https://github.com/SnehankurSarkar/isem-arbitrage-analysis.git
+cd isem-arbitrage-analysis
 
 # Create a virtual environment
 python -m venv .venv
