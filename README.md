@@ -1,5 +1,6 @@
 # ⚡ Energy Market Arbitrage Analytics
 
+[![CI](https://github.com/SnehankurSarkar/isem-arbitrage-analysis/actions/workflows/python-app.yml/badge.svg)](https://github.com/SnehankurSarkar/isem-arbitrage-analysis/actions/workflows/python-app.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![LightGBM](https://img.shields.io/badge/LightGBM-Gradient%20Boosting-brightgreen)](https://lightgbm.readthedocs.io/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Pipeline-orange?logo=scikit-learn)](https://scikit-learn.org/)
